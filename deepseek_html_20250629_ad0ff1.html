@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ReconAI - Bank Reconciliation Agent</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4edf5 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+            overflow: hidden;
+        }
+        
+        .card:hover {
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.12);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #1e3a8a 0%, #2d5288 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 14px 28px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(30, 58, 138, 0.2);
+        }
+        
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #172554 0%, #1e3a8a 100%);
+            box-shadow: 0 6px 16px rgba(30, 58, 138, 0.3);
+            transform: translateY(-2px);
+        }
+        
+        .btn-secondary {
+            background: #f1f5f9;
+            color: #1e293b;
+            border: none;
+            border-radius: 10px;
+            padding: 12px 24px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-secondary:hover {
+            background: #e2e8f0;
+            transform: translateY(-2px);
+        }
+        
+        .file-upload {
+            border: 2px dashed #cbd5e1;
+            border-radius: 12px;
+            padding: 30px;
+            text-align: center;
+            transition: all 0.3s ease;
+            background: #f8fafc;
+            cursor: pointer;
+        }
+        
+        .file-upload:hover {
+            border-color: #94a3b8;
+            background: #f1f5f9;
+        }
+        
+        .file-upload.dragover {
+            border-color: #1e3a8a;
+            background: #dbeafe;
+        }
+        
+        .loader {
+            width: 60px;
+            height: 60px;
+            border: 5px solid #e2e8f0;
+            border-top: 5px solid #1e3a8a;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .file-card {
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+        
+        .file-card:hover {
+            background: #f1f5f9;
+            transform: translateY(-3px);
+        }
+        
+        .input-field {
+            border: 1px solid #cbd5e1;
+            border-radius: 10px;
+            padding: 14px 16px;
+            width: 100%;
+            transition: all 0.3s ease;
+        }
+        
+        .input-field:focus {
+            border-color: #1e3a8a;
+            box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.1);
+            outline: none;
+        }
+        
+        .success-badge {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        }
+        
+        .section-title {
+            position: relative;
+            padding-bottom: 15px;
+            margin-bottom: 25px;
+        }
+        
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 60px;
+            height: 4px;
+            background: linear-gradient(90deg, #1e3a8a 0%, #3b82f6 100%);
+            border-radius: 2px;
+        }
+    </style>
+</head>
+<body>
+    <div class="max-w-4xl mx-auto">
+        <!-- Header -->
+        <header class="py-8 text-center">
+            <div class="flex items-center justify-center mb-4">
+                <div class="w-14 h-14 rounded-full bg-blue-50 flex items-center justify-center mr-4">
+                    <i class="fas fa-robot text-2xl text-blue-900"></i>
+                </div>
+                <h1 class="text-4xl font-bold text-slate-800">Recon<span class="text-blue-900">AI</span></h1>
+            </div>
+            <p class="text-slate-600 max-w-2xl mx-auto">AI-powered bank reconciliation for financial professionals. Automate your reconciliation process with intelligent matching and error detection.</p>
+        </header>
+        
+        <!-- Main Card -->
+        <div class="card">
+            <!-- Form Section -->
+            <div id="formSection" class="p-8">
+                <h2 class="text-2xl font-bold text-slate-800 mb-2">Bank Reconciliation</h2>
+                <p class="text-slate-600 mb-8">Upload your files and enter details to start reconciliation</p>
+                
+                <form id="reconciliationForm">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+                        <div>
+                            <label class="block text-slate-700 font-medium mb-2">Company Name</label>
+                            <input type="text" class="input-field" placeholder="Enter company name" required>
+                        </div>
+                        <div>
+                            <label class="block text-slate-700 font-medium mb-2">Bank Name</label>
+                            <input type="text" class="input-field" placeholder="Enter bank name" required>
+                        </div>
+                        <div>
+                            <label class="block text-slate-700 font-medium mb-2">Bank ID</label>
+                            <input type="text" class="input-field" placeholder="Enter bank ID" required>
+                        </div>
+                        <div>
+                            <label class="block text-slate-700 font-medium mb-2">Date</label>
+                            <input type="text" id="datePicker" class="input-field" placeholder="Select date" required>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+                        <div>
+                            <h3 class="section-title text-xl font-semibold text-slate-800">Upload Cash Book</h3>
+                            <div class="file-upload" id="cashBookUpload">
+                                <i class="fas fa-file-excel text-3xl text-green-600 mb-3"></i>
+                                <p class="font-medium text-slate-700 mb-1">Drag & drop your file here</p>
+                                <p class="text-slate-500 text-sm mb-4">Supports .xlsx or .csv formats</p>
+                                <button type="button" class="btn-secondary">Browse Files</button>
+                                <input type="file" class="hidden" accept=".xlsx,.csv">
+                            </div>
+                            <p id="cashBookName" class="text-slate-500 text-sm mt-3 italic">No file selected</p>
+                        </div>
+                        
+                        <div>
+                            <h3 class="section-title text-xl font-semibold text-slate-800">Upload Bank Statement</h3>
+                            <div class="file-upload" id="bankStatementUpload">
+                                <i class="fas fa-file-pdf text-3xl text-red-600 mb-3"></i>
+                                <p class="font-medium text-slate-700 mb-1">Drag & drop your file here</p>
+                                <p class="text-slate-500 text-sm mb-4">Supports .pdf or .docx formats</p>
+                                <button type="button" class="btn-secondary">Browse Files</button>
+                                <input type="file" class="hidden" accept=".pdf,.docx">
+                            </div>
+                            <p id="bankStatementName" class="text-slate-500 text-sm mt-3 italic">No file selected</p>
+                        </div>
+                    </div>
+                    
+                    <div class="text-center mt-6">
+                        <button type="submit" class="btn-primary">
+                            <i class="fas fa-cogs mr-2"></i>Submit for Reconciliation
+                        </button>
+                    </div>
+                </form>
+            </div>
+            
+            <!-- Loading Section -->
+            <div id="loadingSection" class="hidden p-12 text-center">
+                <div class="flex justify-center mb-6">
+                    <div class="loader"></div>
+                </div>
+                <h2 class="text-2xl font-bold text-slate-800 mb-4">Reconciling transactions… please wait.</h2>
+                <p class="text-slate-600 max-w-md mx-auto">Our AI agent is analyzing your documents, matching transactions, and identifying discrepancies. This may take a few moments.</p>
+            </div>
+            
+            <!-- Results Section -->
+            <div id="resultsSection" class="hidden p-8">
+                <div class="flex justify-between items-start mb-8">
+                    <div>
+                        <div class="inline-flex items-center px-4 py-2 rounded-full success-badge text-white mb-3">
+                            <i class="fas fa-check-circle mr-2"></i>
+                            <span>Reconciliation Complete!</span>
+                        </div>
+                        <h2 class="text-2xl font-bold text-slate-800">Reconciliation Results</h2>
+                    </div>
+                    <button id="newSessionBtn" class="btn-secondary">
+                        <i class="fas fa-sync mr-2"></i>Start New Session
+                    </button>
+                </div>
+                
+                <div class="bg-blue-50 rounded-xl p-6 mb-8">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="text-center">
+                            <div class="text-3xl font-bold text-blue-900">98%</div>
+                            <div class="text-slate-600">Match Rate</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-3xl font-bold text-blue-900">12</div>
+                            <div class="text-slate-600">Transactions Reconciled</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-3xl font-bold text-blue-900">2</div>
+                            <div class="text-slate-600">Discrepancies Found</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <h3 class="text-xl font-semibold text-slate-800 mb-4">Download Files</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                    <div class="file-card">
+                        <div class="flex items-start">
+                            <div class="mr-4">
+                                <div class="w-12 h-12 rounded-lg bg-red-50 flex items-center justify-center">
+                                    <i class="fas fa-file-pdf text-2xl text-red-600"></i>
+                                </div>
+                            </div>
+                            <div class="flex-1">
+                                <h4 class="font-semibold text-slate-800">Reconciliation Report</h4>
+                                <p class="text-slate-500 text-sm mb-3">Detailed report of reconciliation results</p>
+                                <p class="text-slate-400 text-xs">File size: 245 KB</p>
+                            </div>
+                            <button class="btn-secondary px-4 py-2">
+                                <i class="fas fa-download mr-1"></i> Download
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="file-card">
+                        <div class="flex items-start">
+                            <div class="mr-4">
+                                <div class="w-12 h-12 rounded-lg bg-green-50 flex items-center justify-center">
+                                    <i class="fas fa-file-excel text-2xl text-green-600"></i>
+                                </div>
+                            </div>
+                            <div class="flex-1">
+                                <h4 class="font-semibold text-slate-800">Updated Cash Book</h4>
+                                <p class="text-slate-500 text-sm mb-3">Reconciled cash book with adjustments</p>
+                                <p class="text-slate-400 text-xs">File size: 178 KB</p>
+                            </div>
+                            <button class="btn-secondary px-4 py-2">
+                                <i class="fas fa-download mr-1"></i> Download
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-slate-50 rounded-xl p-6">
+                    <h3 class="text-xl font-semibold text-slate-800 mb-4">Reconciliation Summary</h3>
+                    <ul class="space-y-3">
+                        <li class="flex">
+                            <i class="fas fa-check-circle text-green-500 mt-1 mr-3"></i>
+                            <span>12 transactions successfully matched</span>
+                        </li>
+                        <li class="flex">
+                            <i class="fas fa-exclamation-triangle text-amber-500 mt-1 mr-3"></i>
+                            <span>2 discrepancies found requiring review</span>
+                        </li>
+                        <li class="flex">
+                            <i class="fas fa-info-circle text-blue-500 mt-1 mr-3"></i>
+                            <span>No missing transactions detected</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Footer -->
+        <footer class="text-center py-8 text-slate-500 text-sm">
+            <p>© 2023 ReconAI. All rights reserved. Designed for financial professionals.</p>
+            <p class="mt-1">Bank-grade security | SOC 2 Compliant | AES-256 Encryption</p>
+        </footer>
+    </div>
+
+    <script>
+        // Initialize date picker
+        flatpickr("#datePicker", {
+            dateFormat: "Y-m-d",
+            defaultDate: "today",
+            maxDate: "today"
+        });
+        
+        // Form submission handling
+        document.getElementById('reconciliationForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Show loading section
+            document.getElementById('formSection').classList.add('hidden');
+            document.getElementById('loadingSection').classList.remove('hidden');
+            document.getElementById('resultsSection').classList.add('hidden');
+            
+            // Simulate processing time
+            setTimeout(function() {
+                document.getElementById('loadingSection').classList.add('hidden');
+                document.getElementById('resultsSection').classList.remove('hidden');
+            }, 3000);
+        });
+        
+        // New session button
+        document.getElementById('newSessionBtn').addEventListener('click', function() {
+            // Reset form
+            document.getElementById('reconciliationForm').reset();
+            document.getElementById('cashBookName').textContent = 'No file selected';
+            document.getElementById('bankStatementName').textContent = 'No file selected';
+            
+            // Show form section
+            document.getElementById('resultsSection').classList.add('hidden');
+            document.getElementById('formSection').classList.remove('hidden');
+        });
+        
+        // File upload handling
+        function setupFileUpload(uploadId, fileNameId, acceptTypes) {
+            const uploadArea = document.getElementById(uploadId);
+            const fileInput = uploadArea.querySelector('input[type="file"]');
+            const fileName = document.getElementById(fileNameId);
+            const browseBtn = uploadArea.querySelector('button');
+            
+            // Click on button to trigger file input
+            browseBtn.addEventListener('click', function() {
+                fileInput.click();
+            });
+            
+            // Click on entire area to trigger file input
+            uploadArea.addEventListener('click', function(e) {
+                if (e.target !== browseBtn) {
+                    fileInput.click();
+                }
+            });
+            
+            // Handle file selection
+            fileInput.addEventListener('change', function() {
+                if (this.files.length > 0) {
+                    fileName.textContent = this.files[0].name;
+                } else {
+                    fileName.textContent = 'No file selected';
+                }
+            });
+            
+            // Drag and drop handling
+            uploadArea.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                this.classList.add('dragover');
+            });
+            
+            uploadArea.addEventListener('dragleave', function() {
+                this.classList.remove('dragover');
+            });
+            
+            uploadArea.addEventListener('drop', function(e) {
+                e.preventDefault();
+                this.classList.remove('dragover');
+                
+                if (e.dataTransfer.files.length) {
+                    fileInput.files = e.dataTransfer.files;
+                    fileName.textContent = e.dataTransfer.files[0].name;
+                }
+            });
+        }
+        
+        // Initialize file uploads
+        setupFileUpload('cashBookUpload', 'cashBookName', '.xlsx,.csv');
+        setupFileUpload('bankStatementUpload', 'bankStatementName', '.pdf,.docx');
+    </script>
+</body>
+</html>
